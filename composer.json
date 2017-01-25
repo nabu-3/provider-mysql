@@ -1,7 +1,7 @@
 {
     "type": "provider-package",
     "name": "nabu-3/provider-mysql",
-    "description": "nabu-3 MysqL Provider package",
+    "description": "nabu-3 MySQL Provider package",
     "keywords": [ "nabu-3", "nabu", "mysql", "provider" ],
     "repositories": [
         {
@@ -9,7 +9,7 @@
             "url": "https://github.com/nabu-3/provider-mysql"
         }
     ],
-    "version": "0.0.1",
+    "version": "0.0.2",
     "license": "Apache-2.0",
     "authors": [
         {
@@ -19,7 +19,7 @@
         }
     ],
     "require": {
-        "nabu-3/provider-composer-plugin": "*"
+        "nabu-3/composer-installer-plugin": "~3.0"
     },
     "prefer-stable": true
 }
