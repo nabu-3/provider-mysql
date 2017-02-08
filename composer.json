@@ -1,15 +1,15 @@
 {
     "type": "nabu-provider",
-    "name": "nabu-3/provider-mysql",
-    "description": "nabu-3 MySQL Provider package",
+    "name": "nabu-3/provider-mysql-driver",
+    "description": "nabu-3 MySQL Driver Provider package",
     "keywords": [ "nabu-3", "nabu", "mysql", "provider" ],
     "repositories": [
         {
             "type": "vcs",
-            "url": "https://github.com/nabu-3/provider-mysql"
+            "url": "https://github.com/nabu-3/provider-mysql-mysql"
         }
     ],
-    "version": "0.0.3",
+    "version": "0.0.4",
     "license": "Apache-2.0",
     "authors": [
         {
