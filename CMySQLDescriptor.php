@@ -17,19 +17,19 @@
  *  limitations under the License.
  */
 
-namespace providers\mysql;
+namespace providers\mysql\driver;
 
 use nabu\core\exceptions\ENabuCoreException;
 use nabu\db\CNabuDBAbstractDescriptor;
 use nabu\db\exceptions\ENabuDBException;
 use nabu\db\interfaces\INabuDBConnector;
-use nabu\db\interfaces\INabuDBDescriptor;
 
 /**
  * Class to manage a JSON MySQL Descriptor Storage of a MySQL table.
  * @author Rafael Gutierrez <rgutierrez@wiscot.com>
- * @version 3.0.0 Surface
- * @package providers\mysql
+ * @since 0.0.1
+ * @version 0.0.1
+ * @package providers\mysql\driver
  */
 final class CMySQLDescriptor extends CNabuDBAbstractDescriptor
 {
@@ -119,7 +119,14 @@ final class CMySQLDescriptor extends CNabuDBAbstractDescriptor
         }
     }
 
-    public function buildFieldReplacement($field_descriptor, $alias = false)
+    /**
+     * Builds a well formed replacement string for a field value.
+     * @param array $field_descriptor Field descriptor to build the replacement string.
+     * @param string $alias Alternate name used to map the value in the replacement string.
+     * @return string Returns a well formed replacement string of false if no valid descriptor data_type found in
+     * field descriptor.
+     */
+    public function buildFieldReplacement(array $field_descriptor, $alias = false)
     {
         if ($alias === false) {
             $alias = $field_descriptor['name'];
@@ -139,6 +146,13 @@ final class CMySQLDescriptor extends CNabuDBAbstractDescriptor
         return $retval;
     }
 
+    /**
+     * Builds a well formed string for a field value containing their value represented in MySQL SQL syntax.
+     * This method prevents SQL Injection.
+     * @param array $field_descriptor Field descriptor to build the field value string.
+     * @param mixed $value Value to be converted into a valid MySQL value representation.
+     * @return string Returns the well formed string or false if no valid data_type found in field descriptor.
+     */
     public function buildFieldValue($field_descriptor, $value)
     {
         if ($value === null) {

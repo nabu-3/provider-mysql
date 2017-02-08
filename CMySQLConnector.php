@@ -17,7 +17,7 @@
  *  limitations under the License.
  */
 
-namespace providers\mysql;
+namespace providers\mysql\driver;
 
 use \nabu\core\CNabuEngine;
 use \nabu\core\exceptions\ENabuCoreException;
@@ -26,8 +26,9 @@ use \nabu\db\CNabuDBAbstractConnector;
 /**
  * MySQL implementation to use MySQL servers as database engine for Nabu 3
  * @author Rafael Gutiérrez <rgutierrez@wiscot.com>
- * @version 3.0.0 Surface
- * @package providers\mysql
+ * @since 0.0.1
+ * @version 0.0.1
+ * @package providers\mysql\driver
  */
 final class CMySQLConnector extends CNabuDBAbstractConnector
 {

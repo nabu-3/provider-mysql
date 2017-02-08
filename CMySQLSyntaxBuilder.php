@@ -17,14 +17,15 @@
  *  limitations under the License.
  */
 
-namespace providers\mysql;
+namespace providers\mysql\driver;
 
 use \nabu\core\exceptions\ENabuCoreException;
 use \nabu\db\interfaces\INabuDBSyntaxBuilder;
 
 /**
  * @author Rafael Gutierrez <rgutierrez@wiscot.com>
- * @version 3.0.0 Surface
+ * @since 0.0.1
+ * @version 0.0.1
  * @package providers\mysql
  */
 class CMySQLSyntaxBuilder implements INabuDBSyntaxBuilder

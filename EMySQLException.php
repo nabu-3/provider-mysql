@@ -17,33 +17,44 @@
  *  limitations under the License.
  */
 
-namespace providers\mysql;
+namespace providers\mysql\driver;
 
 use \nabu\db\exceptions\ENabuDBException;
 
 /**
  * @author Rafael Gutierrez <rgutierrez@wiscot.com>
- * @version 3.0.0 Surface
- * @package providers\mysql
+ * @since 0.0.1
+ * @version 0.0.1
+ * @package providers\mysql\driver
  */
 class EMySQLException extends ENabuDBException
 {
     /* Query error messages */
+    /** @var int */
     const ERROR_QUERY_RESULTSET_NOT_FOUND = 0x8001;
+    /** @var int */
     const ERROR_QUERY_RESULTSET_NOT_ALLOWED = 0x8002;
+    /** @var int */
     const ERROR_QUERY_INVALID_SENTENCE = 0x8003;
-    
+
     /* Syntax Builder error messages */
+    /** @var int */
     const ERROR_SYNTAX_TABLE_NAME_NOT_FOUND = 0xc001;
-    
+
+    /** @var int */
     const ERROR_SYNTAX_FIELDS_NOT_FOUND = 0xc101;
+    /** @var int */
     const ERROR_SYNTAX_FIELD_NAME_NOT_FOUND = 0xc102;
-    
+
+    /** @var int */
     const ERROR_SYNTAX_INVALID_CONSTRAINT_DESCRIPTOR = 0xc301;
+    /** @var int */
     const ERROR_SYNTAX_CONSTRAINT_ATTR_NOT_FOUND = 0xc302;
+    /** @var int */
     const ERROR_SYNTAX_CONSTRAINT_FIELDS_NOT_FOUND = 0xc303;
+    /** @var int */
     const ERROR_SYNTAX_CONSTRAINT_FIELDS_EMPTY = 0xc304;
-    
+
     public function __construct(
         $code,
         $sql_code = 0,
@@ -53,10 +64,10 @@ class EMySQLException extends ENabuDBException
         $previous = null
     ) {
         $this->overloadMessages();
-        
+
         parent::__construct($code, $sql_code, $sql_message, $sql_script, $values, $previous);
     }
-    
+
     protected function overloadMessages()
     {
         /* Query error messages */
@@ -66,7 +77,7 @@ class EMySQLException extends ENabuDBException
             'MySQL Query does not support resultset';
         $this->error_messages[EMySQLException::ERROR_QUERY_INVALID_SENTENCE] =
             'MySQL Invalid sentence';
-                
+
         /* Syntax Builder error messages */
         $this->error_messages[EMySQLException::ERROR_SYNTAX_TABLE_NAME_NOT_FOUND] =
             'Descriptor does not contain a table name';

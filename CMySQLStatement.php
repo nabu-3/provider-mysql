@@ -17,15 +17,16 @@
  *  limitations under the License.
  */
 
-namespace providers\mysql;
+namespace providers\mysql\driver;
 
 use \nabu\db\CNabuDBAbstractStatement;
 
 /**
  * Class to manage MySQL Statements.
  * @author Rafael Gutierrez <rgutierrez@wiscot.com>
- * @version 3.0.0 Surface
- * @package providers\mysql
+ * @since 0.0.1
+ * @version 0.0.1
+ * @package providers\mysql\driver
  */
 final class CMySQLStatement extends CNabuDBAbstractStatement
 {
