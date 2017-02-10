@@ -24,7 +24,7 @@ use \nabu\core\exceptions\ENabuCoreException;
 use \nabu\db\CNabuDBAbstractConnector;
 
 /**
- * MySQL implementation to use MySQL servers as database engine for Nabu 3
+ * MySQL implementation to use MySQL servers as database engine for nabu-3
  * @author Rafael Gutiérrez <rgutierrez@wiscot.com>
  * @since 0.0.1
  * @version 0.0.1
