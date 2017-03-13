@@ -104,7 +104,7 @@ final class CMySQLDescriptor extends CNabuDBAbstractDescriptor
             foreach ($this->primary_constraint['fields'] as $key_name => $key_field) {
                 if (is_array($key_field) && array_key_exists($key_name, $data)) {
                     $filter .= (strlen($filter) > 0 ? ' and ' : '')
-                             . $key_name . '=' . $this->buildFieldValue($this->getField($key_name), $data);
+                             . $key_name . '=' . $this->buildFieldValue($this->getField($key_name), $data[$key_name]);
                 } else {
                     throw new ENabuDBException(ENabuDBException::ERROR_STORAGE_DESCRIPTOR_SYNTAX_ERROR);
                 }
