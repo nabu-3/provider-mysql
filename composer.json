@@ -6,7 +6,7 @@
     "repositories": [
         {
             "type": "vcs",
-            "url": "https://github.com/nabu-3/provider-mysql-mysql"
+            "url": "https://github.com/nabu-3/provider-mysql-driver"
         }
     ],
     "version": "0.0.6",
@@ -21,5 +21,7 @@
     "require": {
         "nabu-3/composer-installer-plugin": "~3.0"
     },
-    "prefer-stable": true
+    "require-dev": {
+        "nabu-3/composer-installer-plugin": "dev-master"
+    }
 }
