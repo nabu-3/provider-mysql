@@ -171,6 +171,7 @@ final class CMySQLDescriptor extends CNabuDBAbstractDescriptor
                     break;
                 case 'varchar':
                 case 'text':
+                case 'longtext':
                 case 'enum':
                     $retval = $this->nb_connector->buildSentence("'%s'", $value);
                     break;
