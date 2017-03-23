@@ -173,6 +173,7 @@ final class CMySQLDescriptor extends CNabuDBAbstractDescriptor
                 case 'text':
                 case 'longtext':
                 case 'enum':
+                case 'set':
                     $retval = $this->nb_connector->buildSentence("'%s'", $value);
                     break;
                 case 'datetime':
@@ -183,6 +184,7 @@ final class CMySQLDescriptor extends CNabuDBAbstractDescriptor
                     }
                     break;
                 default:
+                    error_log($field_descriptor['data_type']);
                     throw new ENabuCoreException(ENabuCoreException::ERROR_FEATURE_NOT_IMPLEMENTED);
             }
         }
