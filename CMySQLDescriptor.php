@@ -137,6 +137,11 @@ final class CMySQLDescriptor extends CNabuDBAbstractDescriptor
                 $retval = "%d$alias\$d";
                 break;
             case 'varchar':
+            case 'text':
+            case 'longtext':
+            case 'enum':
+            case 'set':
+            case 'tinytext':
                 $retval = "'%s$alias\$s'";
                 break;
             default:
@@ -174,6 +179,7 @@ final class CMySQLDescriptor extends CNabuDBAbstractDescriptor
                 case 'longtext':
                 case 'enum':
                 case 'set':
+                case 'tinytext':
                     $retval = $this->nb_connector->buildSentence("'%s'", $value);
                     break;
                 case 'datetime':
