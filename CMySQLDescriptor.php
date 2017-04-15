@@ -26,7 +26,7 @@ use nabu\db\interfaces\INabuDBConnector;
 
 /**
  * Class to manage a JSON MySQL Descriptor Storage of a MySQL table.
- * @author Rafael Gutierrez <rgutierrez@wiscot.com>
+ * @author Rafael Gutierrez <rgutierrez@nabu-3.com>
  * @since 0.0.1
  * @version 0.0.1
  * @package providers\mysql\driver

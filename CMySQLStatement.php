@@ -23,7 +23,7 @@ use \nabu\db\CNabuDBAbstractStatement;
 
 /**
  * Class to manage MySQL Statements.
- * @author Rafael Gutierrez <rgutierrez@wiscot.com>
+ * @author Rafael Gutierrez <rgutierrez@nabu-3.com>
  * @since 0.0.1
  * @version 0.0.1
  * @package providers\mysql\driver
