@@ -19,6 +19,7 @@
 
 namespace providers\mysql\driver;
 
+use Exception;
 use \nabu\db\exceptions\ENabuDBException;
 
 /**
@@ -56,12 +57,12 @@ class EMySQLException extends ENabuDBException
     const ERROR_SYNTAX_CONSTRAINT_FIELDS_EMPTY = 0xc304;
 
     public function __construct(
-        $code,
-        $sql_code = 0,
-        $sql_message = null,
-        $sql_script = null,
-        $values = null,
-        $previous = null
+        int $code,
+        int $sql_code = 0,
+        string $sql_message = null,
+        string $sql_script = null,
+        array $values = null,
+        Exception $previous = null
     ) {
         $this->overloadMessages();
 
