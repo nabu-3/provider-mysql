@@ -326,7 +326,7 @@ final class CMySQLConnector extends CNabuDBAbstractConnector
             throw new EMySQLException(EMySQLException::ERROR_QUERY_INVALID_SENTENCE);
         }
 
-        $final_sentence = $this->buildSentence($sentence, $params);
+        $final_sentence = $this->buildSentence($this->clearLeadingAndTrailingSpaces($sentence), $params);
 
         if ($trace === true) {
             $nb_engine->errorLog("Query: $final_sentence", E_CORE_WARNING);
@@ -363,6 +363,23 @@ final class CMySQLConnector extends CNabuDBAbstractConnector
         }
     }
 
+    /**
+     * Clean all leading and trailing spaces in a sentence. To prevent to alter literals in the sentence, this method
+     * could to be called before apply variable values.
+     * @param string $sentence Sentence to be cleaned.
+     * @return string Returns the Sentence cleaned if the Leading & Trailing Optimization is enabled.
+     */
+    private function clearLeadingAndTrailingSpaces(string $sentence) : string
+    {
+        if ($this->trailing_optimization) {
+            $sentence = preg_replace('/^\\s+/', '', $sentence);
+            $sentence = preg_replace('/\\s+$/', '', $sentence);
+            $sentence = preg_replace('/\\s*\\\\n\\s*/', ' ', $sentence);
+        }
+
+        return $sentence;
+    }
+
     public function executeSentence($sentence, $params = null, $trace = false)
     {
         $nb_engine = CNabuEngine::getEngine();
@@ -377,7 +394,7 @@ final class CMySQLConnector extends CNabuDBAbstractConnector
             throw new EMySQLException(EMySQLException::ERROR_QUERY_INVALID_SENTENCE);
         }
 
-        $final_sentence = $this->buildSentence($sentence, $params);
+        $final_sentence = $this->buildSentence($this->clearLeadingAndTrailingSpaces($sentence), $params);
 
         if ($trace === true) {
             $nb_engine->errorLog("Query: $final_sentence", E_CORE_WARNING);
@@ -419,7 +436,7 @@ final class CMySQLConnector extends CNabuDBAbstractConnector
             throw new EMySQLException(EMySQLException::ERROR_QUERY_INVALID_SENTENCE);
         }
 
-        $final_sentence = $this->buildSentence($sentence, $params);
+        $final_sentence = $this->buildSentence($this->clearLeadingAndTrailingSpaces($sentence), $params);
 
         if ($trace === true) {
             $nb_engine->errorLog("Query: $final_sentence", E_CORE_WARNING);
