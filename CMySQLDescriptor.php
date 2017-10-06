@@ -136,6 +136,10 @@ final class CMySQLDescriptor extends CNabuDBAbstractDescriptor
             case 'int':
                 $retval = "%d$alias\$d";
                 break;
+            case 'float':
+            case 'double':
+                $retval = "%F$alias\$d";
+                break;
             case 'varchar':
             case 'text':
             case 'longtext':
@@ -173,6 +177,10 @@ final class CMySQLDescriptor extends CNabuDBAbstractDescriptor
             switch ($field_descriptor['data_type']) {
                 case 'int':
                     $retval = $this->nb_connector->buildSentence('%d', $value);
+                    break;
+                case 'float':
+                case 'double':
+                    $retval = $this->nb_connector->buildSentence('%F', $value);
                     break;
                 case 'varchar':
                 case 'text':
