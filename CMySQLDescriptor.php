@@ -36,7 +36,7 @@ final class CMySQLDescriptor extends CNabuDBAbstractDescriptor
     /**
      * Overrides parent constructor to check integrity of the descriptor.
      * @param INabuDBConnector $nb_connector MySQL Database Connector.
-     * @param array $storage_descriptor JSON descriptor decoded as associative array.
+     * @param array|null $storage_descriptor JSON descriptor decoded as associative array.
      */
     public function __construct(INabuDBConnector $nb_connector, array $storage_descriptor = null)
     {
