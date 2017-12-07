@@ -375,7 +375,7 @@ final class CMySQLConnector extends CNabuDBAbstractConnector
         if ($this->trailing_optimization) {
             $sentence = preg_replace('/^\\s+/', '', $sentence);
             $sentence = preg_replace('/\\s+$/', '', $sentence);
-            $sentence = preg_replace('/\\s*\\\\n\\s*/', ' ', $sentence);
+            $sentence = preg_replace('/\\s*\\n\\s*/', ' ', $sentence);
         }
 
         return $sentence;
