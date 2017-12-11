@@ -191,9 +191,14 @@ final class CMySQLDescriptor extends CNabuDBAbstractDescriptor
                 case 'tinytext':
                     $retval = $this->nb_connector->buildSentence("'%s'", $value);
                     break;
+                case 'date':
                 case 'datetime':
                     if ($field_descriptor['name'] !== $this->storage_descriptor['name'] . '_creation_datetime') {
-                        $retval = $this->nb_connector->buildSentence("'%s'", $value);
+                        if ($value === null) {
+                            $retval = 'null';
+                        } else {
+                            $retval = $this->nb_connector->buildSentence("'%s'", $value);
+                        }
                     } else {
                         $retval = false;
                     }
