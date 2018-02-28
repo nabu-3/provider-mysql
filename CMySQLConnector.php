@@ -591,7 +591,7 @@ final class CMySQLConnector extends CNabuDBAbstractConnector
         return false;
     }
 
-    public function getQueryAsCount($table, $where = null, $distinct = null, $trace = false)
+    public function getQueryAsCount($table, $distinct = null, $where = null, $params = null, $trace = false)
     {
         $count = 0;
 
@@ -599,7 +599,7 @@ final class CMySQLConnector extends CNabuDBAbstractConnector
             $statement = $this->getQuery(
                 "select count(".(is_string($distinct) ? "distinct $distinct" : "*").") "
                 . "from $table"
-                . (is_string($where) ? " where $where" : ""), null, $trace
+                . (is_string($where) ? " where $where" : ""), $params, $trace
             );
             if ($statement) {
                 if (($row = $statement->fetchAsArray())) {
