@@ -244,7 +244,7 @@ final class CMySQLConnector extends CNabuDBAbstractConnector
 
     public function setCharset($charset)
     {
-        if ($this->isConnected() && !mysqli_set_charset($this->connector, $this->charset)) {
+        if ($this->isConnected() && $this->connector->set_charset($this->charset)) {
             $this->setError(mysqli_error($this->connector), mysqli_errno($this->connector));
             return false;
         }
