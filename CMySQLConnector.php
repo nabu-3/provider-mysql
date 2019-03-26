@@ -1,6 +1,7 @@
 <?php
 
-/*  Copyright 2009-2011 Rafael Gutierrez Martinez
+/** @license
+ *  Copyright 2009-2011 Rafael Gutierrez Martinez
  *  Copyright 2012-2013 Welma WEB MKT LABS, S.L.
  *  Copyright 2014-2016 Where Ideas Simply Come True, S.L.
  *  Copyright 2017 nabu-3 Group
@@ -23,51 +24,55 @@ namespace providers\mysql\driver;
 use \nabu\core\CNabuEngine;
 use \nabu\core\exceptions\ENabuCoreException;
 use \nabu\db\CNabuDBAbstractConnector;
+use nabu\db\CNabuDBAbstractStatement;
 
 /**
  * MySQL implementation to use MySQL servers as database engine for nabu-3
  * @author Rafael Gutiérrez <rgutierrez@nabu-3.com>
  * @since 0.0.1
- * @version 0.0.1
+ * @version 0.0.7
  * @package providers\mysql\driver
  */
 final class CMySQLConnector extends CNabuDBAbstractConnector
 {
     /* Object types */
+    /** @var string Internal literal. */
     const TYPE_TABLE = 'table';
 
     /* Warning codes */
+    /** @var int MySQL Warning code when table already exists. */
     const WARNING_TABLE_ALREADY_EXISTS  = 1050;
 
-    /**
-     * Database connector handler that handles the connection or false if not connected
-     * @var mixed
-     */
+    /** @var mixed Database connector handler that handles the connection or false if not connected. */
     private $connector = false;
-
-    /**
-     * Syntax builder object.
-     * @var CMySQLSyntaxBuilder
-     */
+    /** @var CMySQLSyntaxBuilder Syntax builder object. */
     private $syntax_builder = null;
-
-    /**
-     * Statements associative array
-     * @var array
-     */
+    /** @var array Statements associative array. */
     private $statements = null;
+    /** @var int Number of queries executed. */
     private $queries_executed;
+    /** @var int Number of queries released. */
     private $queries_released;
+    /** @var int Number of erroneus queries. */
     private $queries_erroneous;
+    /** @var int Number of sentences executed. */
     private $sentences_executed;
+    /** @var int Number of erroneus sentences. */
     private $sentences_erroneous;
+    /** @var int Number of insert sentences executed. */
     private $inserts_executed;
+    /** @var int Number of insert erroneus sentences. */
     private $inserts_erroneous;
+    /** @var int Number of update sentences executed. */
     private $updates_executed;
+    /** @var int Number of update erroneus sentences. */
     private $updates_erroneous;
+    /** @var int Number of delete sentences executed. */
     private $deletes_executed;
+    /** @var int Number of delete erroneus sentences. */
     private $deletes_erroneous;
 
+    /** Destructor method to release active statements. */
     public function __destruct()
     {
         while (count($this->statements) > 0) {
@@ -201,6 +206,7 @@ final class CMySQLConnector extends CNabuDBAbstractConnector
         return true;
     }
 
+    /** Reset all stats. */
     private function clearStats()
     {
         $this->queries_executed = 0;
@@ -220,11 +226,14 @@ final class CMySQLConnector extends CNabuDBAbstractConnector
         $this->deletes_erroneous = 0;
     }
 
-    public function enqueueStatement($statement)
+    /** Equeues a statement in the stack to control it.
+      * @param CNabuDBAbstractStatement $statement Statement instance to be enqueued.
+      */
+    public function enqueueStatement(CNabuDBAbstractStatement $statement)
     {
         if ($statement instanceof CMySQLStatement) {
             $hash = $statement->getHash();
-            if (count($this->statements) === 0) {
+            if (!is_array($this->statements) || count($this->statements) === 0) {
                 $this->statements = array($hash => $statement);
             } else {
                 $this->statements[$hash] = $statement;
@@ -232,7 +241,10 @@ final class CMySQLConnector extends CNabuDBAbstractConnector
         }
     }
 
-    public function dequeueStatement($statement)
+    /** Dequeues a statement.
+      * @param CNabuDBAbstractStatement $statement Statement instance to be dequeued.
+      */
+    public function dequeueStatement(CNabuDBAbstractStatement $statement)
     {
         if ($statement instanceof CMySQLStatement) {
             $hash = $statement->getHash();
@@ -604,7 +616,7 @@ final class CMySQLConnector extends CNabuDBAbstractConnector
                 . (is_string($where) ? " where $where" : ""), $params, $trace
             );
             if ($statement) {
-                if (($row = $statement->fetchAsArray())) {
+                if ($row = $statement->fetchAsArray()) {
                     $count = (int)$row[0];
                 }
                 $statement->release();
@@ -673,22 +685,20 @@ final class CMySQLConnector extends CNabuDBAbstractConnector
 
     public function getQueryAsObjectArray($classname, $index_field, $sentence, $params = null, $trace = false)
     {
-        if (is_string($classname)) {
-            if (($statement = $this->getQuery($sentence, $params, $trace))) {
-                $list = array();
-                do {
-                    $object = new $classname();
-                    if ($object->fetch($statement)) {
-                        if ($index_field === null) {
-                            $list[] = $object;
-                        } else {
-                            $list[$object->getValue($index_field)] = $object;
-                        }
+        if (is_string($classname) && ($statement = $this->getQuery($sentence, $params, $trace))) {
+            $list = array();
+            do {
+                $object = new $classname();
+                if ($object->fetch($statement)) {
+                    if ($index_field === null) {
+                        $list[] = $object;
+                    } else {
+                        $list[$object->getValue($index_field)] = $object;
                     }
-                } while ($object->isFetched());
-                $statement->release();
-                return (count($list) > 0 ? $list : null);
-            }
+                }
+            } while ($object->isFetched());
+            $statement->release();
+            return (count($list) > 0 ? $list : null);
         }
 
         return false;
@@ -702,49 +712,48 @@ final class CMySQLConnector extends CNabuDBAbstractConnector
         $subclassing_default = null,
         $trace = false
     ) {
-        if (is_string($subclassing_field)) {
-            if (($statement = $this->getQuery($query, $params, $trace))) {
-                $list = array();
-                while ($data = $statement->fetchAsAssoc()) {
-                    if (array_key_exists($subclassing_field, $data) && strlen($data[$subclassing_field]) > 0) {
-                        $build = new $data[$subclassing_field];
-                    } elseif (strlen($subclassing_default) > 0) {
-                        $build = new $subclassing_default;
-                    } else {
-                        $list = false;
-                        break;
-                    }
+        $list = false;
 
-                    if ($build !== null) {
-                        $build->copyData($data);
-                        if ($build->fill()) {
-                            if ($index_field === null) {
-                                $list[] = $build;
-                            } else {
-                                $list[$build->getValue($index_field)] = $build;
-                            }
+        if (is_string($subclassing_field) && ($statement = $this->getQuery($query, $params, $trace))) {
+            $list = array();
+            while ($data = $statement->fetchAsAssoc()) {
+                if (array_key_exists($subclassing_field, $data) && strlen($data[$subclassing_field]) > 0) {
+                    $build = new $data[$subclassing_field];
+                } elseif (strlen($subclassing_default) > 0) {
+                    $build = new $subclassing_default;
+                } else {
+                    $list = false;
+                    break;
+                }
+
+                if ($build !== null) {
+                    $build->copyData($data);
+                    if ($build->fill()) {
+                        if ($index_field === null) {
+                            $list[] = $build;
+                        } else {
+                            $list[$build->getValue($index_field)] = $build;
                         }
                     }
                 }
-                if ($list !== false && count($list) === 0) {
-                    $list = null;
-                }
-                $statement->release();
-                return $list;
             }
+            if ($list !== false && count($list) === 0) {
+                $list = null;
+            }
+            $statement->release();
         }
 
-        return false;
+        return $list;
     }
 
     public function getLastInsertedId()
     {
-        return ($this->connector ? mysqli_insert_id($this->connector) : false);
+        return ($this->connector && mysqli_insert_id($this->connector));
     }
 
     public function getAffectedRows()
     {
-        return ($this->connector ? mysqli_affected_rows($this->connector) : false);
+        return ($this->connector && mysqli_affected_rows($this->connector));
     }
 
     public function beginTransaction($trace = false)
