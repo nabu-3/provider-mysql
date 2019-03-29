@@ -748,12 +748,24 @@ final class CMySQLConnector extends CNabuDBAbstractConnector
 
     public function getLastInsertedId()
     {
-        return ($this->connector && mysqli_insert_id($this->connector));
+        if ($this->connector) {
+            $id = mysqli_insert_id($this->connector);
+        } else {
+            $id = false;
+        }
+
+        return $id;
     }
 
     public function getAffectedRows()
     {
-        return ($this->connector && mysqli_affected_rows($this->connector));
+        if ($this->connector) {
+            $rows = mysqli_affected_rows($this->connector);
+        } else {
+            $rows = false;
+        }
+
+        return $rows;
     }
 
     public function beginTransaction($trace = false)
