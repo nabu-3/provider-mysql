@@ -199,10 +199,15 @@ class CMySQLSyntaxBuilder implements INabuDBSyntaxBuilder
                     if (!array_key_exists('fields', $primary)) {
                         $primary['fields'] = array();
                     }
+                    switch ($field['Collation']) {
+                        case 'A': $collation = 'ASC';
+                        case 'D': $collation = 'DESC';
+                        default: $collation = null;
+                    }
                     $primary['fields'][$field['Column_name']] = array(
                         'name' => $field['Column_name'],
                         'ordinal' => $field['Seq_in_index'],
-                        'collation' => ($field['Collation'] === 'A' ? 'ASC' : 'DES'),
+                        'collation' => $collation,
                         'comments' => $field['Comment']
                     );
                 } else {
@@ -222,10 +227,15 @@ class CMySQLSyntaxBuilder implements INabuDBSyntaxBuilder
                     if (!array_key_exists('fields', $index)) {
                         $index['fields'] = array();
                     }
+                    switch ($field['Collation']) {
+                        case 'A': $collation = 'ASC';
+                        case 'D': $collation = 'DESC';
+                        default: $collation = null;
+                    }
                     $index['fields'][$field['Column_name']] = array(
                         'name' => $field['Column_name'],
                         'ordinal' => $field['Seq_in_index'],
-                        'collation' => ($field['Collation'] === 'A' ? 'ASC' : 'DES'),
+                        'collation' => $collation,
                         'null' => ($field['Null'] === 'YES'),
                         'subpart' => $field['Sub_part'],
                         'comments' => $field['Comment']
