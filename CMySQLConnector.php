@@ -75,7 +75,7 @@ final class CMySQLConnector extends CNabuDBAbstractConnector
     /** Destructor method to release active statements. */
     public function __destruct()
     {
-        while (count($this->statements) > 0) {
+        while (is_array($this->statements) && count($this->statements) > 0) {
             $statement = array_pop($this->statements);
             $statement->release();
         }
