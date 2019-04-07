@@ -76,12 +76,13 @@ class CMySQLSyntaxBuilder implements INabuDBSyntaxBuilder
     private function describeTable($name, $schema)
     {
         $data = $this->connector->getQueryAsSingleRow(
-                "select t.table_schema, t.table_name, t.engine, t.auto_increment, "
-                     . "t.table_collation, t.table_comment, cs.character_set_name as table_charset "
-                . "from information_schema.tables t, information_schema.character_sets cs "
-               . "where t.table_schema='%schema\$s' "
-                 . "and t.table_name = '%table\$s' "
-                . "and t.table_collation = cs.default_collate_name",
+                'SELECT t.table_schema, t.table_name, t.engine, t.auto_increment,
+                        t.table_collation, t.table_comment, cs.character_set_name AS table_charset,
+                        t.create_options
+                   FROM information_schema.tables t, information_schema.character_sets cs
+                  WHERE t.table_schema=\'%schema$s\'
+                    AND t.table_name = \'%table$s\'
+                    AND t.table_collation = cs.default_collate_name',
                 array(
                     'schema' => $schema,
                     'table' => $name
@@ -96,6 +97,7 @@ class CMySQLSyntaxBuilder implements INabuDBSyntaxBuilder
             $table['autoincrement'] = $data['auto_increment'];
             $table['charset'] = $data['table_charset'];
             $table['collation'] = $data['table_collation'];
+            $table['create_options'] = $data['create_options'];
             $table['comment'] = $data['table_comment'];
             $table['fields'] = $this->describeTableFields($name, $schema);
             $table['constraints'] = $this->describeTableConstraints($name, $table['fields'], $schema);
@@ -111,13 +113,13 @@ class CMySQLSyntaxBuilder implements INabuDBSyntaxBuilder
     {
         $data = $this->connector->getQueryAsAssoc(
                 'column_name',
-                "select column_name, ordinal_position, data_type, numeric_precision, "
-                     . "column_type, column_key, column_default, is_nullable, extra, "
-                     . "column_comment "
-                . "from information_schema.columns "
-               . "where table_schema='%schema\$s' "
-                 . "and table_name = '%table\$s'"
-              . " order by ordinal_position",
+                'SELECT column_name, ordinal_position, data_type, numeric_precision,
+                        column_type, column_key, column_default, is_nullable, extra,
+                        column_comment
+                   FROM information_schema.columns
+                  WHERE table_schema=\'%schema$s\'
+                    AND table_name = \'%table$s\'
+                  ORDER BY ordinal_position',
                 array(
                     'schema' => $schema,
                     'table' => $table
@@ -150,15 +152,15 @@ class CMySQLSyntaxBuilder implements INabuDBSyntaxBuilder
     {
         return $this->connector->getQueryAsSingleField(
                 'constraint_name',
-                "select kcu.constraint_name "
-                . "from information_schema.columns c, information_schema.key_column_usage kcu "
-               . "where c.table_schema='%schema\$s' "
-                 . "and c.table_name='%table\$s' "
-                 . "and c.table_schema=kcu.table_schema "
-                 . "and c.table_name=kcu.table_name "
-                 . "and c.column_name=kcu.column_name "
-                 . "and c.column_key='PRI' "
-               . "group by c.table_schema, c.table_name, kcu.constraint_name, c.column_key",
+                'SELECT kcu.constraint_name
+                   FROM information_schema.columns c, information_schema.key_column_usage kcu
+                  WHERE c.table_schema=\'%schema$s\'
+                    AND c.table_name=\'%table$s\'
+                    AND c.table_schema=kcu.table_schema
+                    AND c.table_name=kcu.table_name
+                    AND c.column_name=kcu.column_name
+                    AND c.column_key=\'PRI\'
+                  GROUP BY c.table_schema, c.table_name, kcu.constraint_name, c.column_key',
                 array(
                     'schema' => $schema,
                     'table' => $table
@@ -175,7 +177,7 @@ class CMySQLSyntaxBuilder implements INabuDBSyntaxBuilder
         }
 
         $show_keys = $this->connector->getQueryAsArray(
-                "show keys from `%schema\$s`.`%table\$s`",
+                'SHOW KEYS FROM `%schema\$s`.`%table\$s`',
                 array(
                     'schema' => $schema,
                     'table' => $table
@@ -262,6 +264,7 @@ class CMySQLSyntaxBuilder implements INabuDBSyntaxBuilder
             switch ($descriptor['type']) {
                 case CMySQLConnector::TYPE_TABLE:
                     return $this->buildTableCreationSentence($descriptor, $safe);
+                default:
             }
         }
 
@@ -289,17 +292,18 @@ class CMySQLSyntaxBuilder implements INabuDBSyntaxBuilder
             }
         }
 
-        $sentence = "create table" . ($safe ? ' if not exists' : '') . " `$descriptor[name]` (\n"
+        $sentence = "CREATE TABLE" . ($safe ? ' IF NOT EXISTS' : '') . " `$descriptor[name]` (\n"
                 . implode(",\n", $parts)
-                . "\n) engine=$descriptor[engine]"
+                . "\n) ENGINE=$descriptor[engine]"
                 . (array_key_exists('autoincrement', $descriptor) &&
                    is_numeric($descriptor['autoincrement']) &&
                    $descriptor['autoincrement'] > 1
-                   ? " auto_increment=$descriptor[autoincrement]"
+                   ? " AUTO_INCREMENT=$descriptor[autoincrement]"
                    : ''
                   )
-                . (array_key_exists('charset', $descriptor) ? " default charset=$descriptor[charset]" : '')
-                . (array_key_exists('collation', $descriptor) ? " default collate=$descriptor[collation]" : '');
+                . (array_key_exists('charset', $descriptor) ? " DEFAULT CHARSET=$descriptor[charset]" : '')
+                . (array_key_exists('collation', $descriptor) ? " DEFAULT COLLATE=$descriptor[collation]" : '')
+                . (array_key_exists('create_options', $descriptor) ? ' ' . $descriptor['create_options'] : '');
 
         return $sentence;
     }
@@ -323,7 +327,7 @@ class CMySQLSyntaxBuilder implements INabuDBSyntaxBuilder
         $default = (array_key_exists('default', $field) ? $field['default'] : null);
 
         if (!$nullable) {
-            $sentence .= " not null";
+            $sentence .= " NOT NULL";
             if ($is_default && $default === null) {
                 $is_default = false;
             }
@@ -331,15 +335,15 @@ class CMySQLSyntaxBuilder implements INabuDBSyntaxBuilder
 
         if ($is_default) {
             if ($default === null) {
-                $sentence .= " default null";
+                $sentence .= " DEFAULT NULL";
             } elseif ($default === false) {
-                $sentence .= " default false";
+                $sentence .= " DEFAULT FALSE";
             } elseif ($default === true) {
-                $sentence .= " default true";
+                $sentence .= " DEFAULT TRUE";
             } elseif (is_numeric($default)) {
-                $sentence .= $this->connector->buildSentence(" default %d", array($default));
+                $sentence .= $this->connector->buildSentence(" DEFAULT %d", array($default));
             } elseif (is_string($default)) {
-                $sentence .= $this->connector->buildSentence(" default '%s'", array($default));
+                $sentence .= $this->connector->buildSentence(" DEFAULT '%s'", array($default));
             }
         }
 
@@ -388,7 +392,7 @@ class CMySQLSyntaxBuilder implements INabuDBSyntaxBuilder
 
         $fields = implode ('`, `', array_keys($constraint['fields']));
 
-        return "primary key (`$fields`)";
+        return "PRIMARY KEY (`$fields`)";
     }
 
     private function buildConstraintIndexCreationFragment($constraint)
@@ -433,6 +437,9 @@ class CMySQLSyntaxBuilder implements INabuDBSyntaxBuilder
         }
         $fields = implode (', ', $fields_arr);
 
-        return ($unique ? 'unique ' : '') . "key `$name` ($fields)";
+        return ($unique ? 'UNIQUE ' : '')
+             . ($constraint['index_type'] == 'FULLTEXT' ? 'FULLTEXT ' : '')
+             . ($constraint['index_type'] == 'SPATIAL' ? 'SPATIAL ' : '')
+             . "KEY `$name` ($fields)";
     }
 }
