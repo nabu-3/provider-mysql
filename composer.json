@@ -20,7 +20,7 @@
     ],
     "require": {
         "nabu-3/composer-installer-plugin": ">=3.0",
-        "nabu-3/lexer": "dev-master"
+        "nabu-3/lexer": ">=0.0"
     },
     "require-dev": {
         "nabu-3/composer-installer-plugin": "dev-master"
