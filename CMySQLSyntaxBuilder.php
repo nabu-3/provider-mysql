@@ -151,17 +151,16 @@ class CMySQLSyntaxBuilder implements INabuDBSyntaxBuilder
         return null;
     }
 
-    private function validateAutoIncrement(string $value, array $fields)
+    private function validateAutoIncrement(string $value = null, array $fields = null)
     {
         $retval = null;
 
-        if (count($fields) > 0) {
+        if (is_array($fields) && count($fields) > 0) {
             foreach ($fields as $field) {
                 if (array_key_exists('extra', $field) &&
                     is_string($field['extra']) &&
                     strpos(strtolower($field['extra']), 'auto_increment') >= 0
                 ) {
-                    echo $field['extra'];
                     $retval = $value;
                     break;
                 }
@@ -365,8 +364,10 @@ class CMySQLSyntaxBuilder implements INabuDBSyntaxBuilder
                 $sentence .= " DEFAULT TRUE";
             } elseif (is_numeric($default)) {
                 $sentence .= $this->connector->buildSentence(" DEFAULT %d", array($default));
-            } elseif (mb_strtolower($dfault) === 'current_timestamp') {
+            } elseif (mb_strtolower($default) === 'current_timestamp') {
                 $sentence .= ' DEFAULT CURRENT_TIMESTAMP';
+            } elseif (mb_strtolower($default) === 'default_generated') {
+                $sentence .= ' DEFAULT DEFAULT_GENERATED';
             } elseif (is_string($default)) {
                 if (nb_strStartsWith($default, '\'') && nb_strEndsWith($default, '\'')) {
                     $sentence .= $this->connector->buildSentence(" DEFAULT %s", array($default));
