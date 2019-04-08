@@ -76,9 +76,10 @@ class CMySQLSyntaxBuilder implements INabuDBSyntaxBuilder
     private function describeTable($name, $schema)
     {
         $data = $this->connector->getQueryAsSingleRow(
-                'SELECT t.table_schema, t.table_name, t.engine, t.auto_increment,
-                        t.table_collation, t.table_comment, cs.character_set_name AS table_charset,
-                        t.create_options
+                'SELECT t.table_schema AS table_schema, t.table_name AS table_name, t.engine AS engine,
+                        t.auto_increment AS auto_increment, t.table_collation AS table_collation,
+                        t.table_comment AS table_comment, cs.character_set_name AS table_charset,
+                        t.create_options AS create_options
                    FROM information_schema.tables t, information_schema.character_sets cs
                   WHERE t.table_schema=\'%schema$s\'
                     AND t.table_name = \'%table$s\'
@@ -90,16 +91,17 @@ class CMySQLSyntaxBuilder implements INabuDBSyntaxBuilder
         );
 
         if (is_array($data)) {
+            $fields = $this->describeTableFields($name, $schema);
             $table['schema'] = $data['table_schema'];
             $table['name'] = $data['table_name'];
             $table['engine'] = $data['engine'];
             $table['type'] = CMySQLConnector::TYPE_TABLE;
-            $table['autoincrement'] = $data['auto_increment'];
+            $table['autoincrement'] = $this->validateAutoIncrement($data['auto_increment'], $fields);
             $table['charset'] = $data['table_charset'];
             $table['collation'] = $data['table_collation'];
             $table['create_options'] = $data['create_options'];
             $table['comment'] = $data['table_comment'];
-            $table['fields'] = $this->describeTableFields($name, $schema);
+            $table['fields'] = $fields;
             $table['constraints'] = $this->describeTableConstraints($name, $table['fields'], $schema);
             $descriptor = new CMySQLDescriptor($this->connector, $table);
         } else {
@@ -113,9 +115,10 @@ class CMySQLSyntaxBuilder implements INabuDBSyntaxBuilder
     {
         $data = $this->connector->getQueryAsAssoc(
                 'column_name',
-                'SELECT column_name, ordinal_position, data_type, numeric_precision,
-                        column_type, column_key, column_default, is_nullable, extra,
-                        column_comment
+                'SELECT column_name AS column_name, ordinal_position AS ordinal_position, data_type AS data_type,
+                        numeric_precision AS numeric_precision, column_type AS column_type, column_key AS column_key,
+                        column_default AS column_default, is_nullable AS is_nullable, extra AS extra,
+                        column_comment AS column_comment
                    FROM information_schema.columns
                   WHERE table_schema=\'%schema$s\'
                     AND table_name = \'%table$s\'
@@ -126,7 +129,7 @@ class CMySQLSyntaxBuilder implements INabuDBSyntaxBuilder
                 )
         );
 
-        if (count($data) > 0) {
+        if (is_array($data) && count($data) > 0) {
             $fields = array();
             foreach ($data as $field) {
                 $fields[$field['column_name']] = array(
@@ -148,11 +151,31 @@ class CMySQLSyntaxBuilder implements INabuDBSyntaxBuilder
         return null;
     }
 
+    private function validateAutoIncrement(string $value, array $fields)
+    {
+        $retval = null;
+
+        if (count($fields) > 0) {
+            foreach ($fields as $field) {
+                if (array_key_exists('extra', $field) &&
+                    is_string($field['extra']) &&
+                    strpos(strtolower($field['extra']), 'auto_increment') >= 0
+                ) {
+                    echo $field['extra'];
+                    $retval = $value;
+                    break;
+                }
+            }
+        }
+
+        return $retval;
+    }
+
     private function getTableConstraintPrimaryName($table, $schema)
     {
         return $this->connector->getQueryAsSingleField(
                 'constraint_name',
-                'SELECT kcu.constraint_name
+                'SELECT kcu.constraint_name AS constraint_name
                    FROM information_schema.columns c, information_schema.key_column_usage kcu
                   WHERE c.table_schema=\'%schema$s\'
                     AND c.table_name=\'%table$s\'
@@ -177,7 +200,7 @@ class CMySQLSyntaxBuilder implements INabuDBSyntaxBuilder
         }
 
         $show_keys = $this->connector->getQueryAsArray(
-                'SHOW KEYS FROM `%schema\$s`.`%table\$s`',
+                'SHOW KEYS FROM `%schema$s`.`%table$s`',
                 array(
                     'schema' => $schema,
                     'table' => $table
@@ -342,8 +365,14 @@ class CMySQLSyntaxBuilder implements INabuDBSyntaxBuilder
                 $sentence .= " DEFAULT TRUE";
             } elseif (is_numeric($default)) {
                 $sentence .= $this->connector->buildSentence(" DEFAULT %d", array($default));
+            } elseif (mb_strtolower($dfault) === 'current_timestamp') {
+                $sentence .= ' DEFAULT CURRENT_TIMESTAMP';
             } elseif (is_string($default)) {
-                $sentence .= $this->connector->buildSentence(" DEFAULT '%s'", array($default));
+                if (nb_strStartsWith($default, '\'') && nb_strEndsWith($default, '\'')) {
+                    $sentence .= $this->connector->buildSentence(" DEFAULT %s", array($default));
+                } else {
+                    $sentence .= $this->connector->buildSentence(" DEFAULT '%s'", array($default));
+                }
             }
         }
 
