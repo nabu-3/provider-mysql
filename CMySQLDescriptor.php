@@ -62,6 +62,7 @@ final class CMySQLDescriptor extends CNabuDBAbstractDescriptor
             array_key_exists('engine', $storage_descriptor) &&
             array_key_exists('type', $storage_descriptor) &&
             array_key_exists('fields', $storage_descriptor) &&
+            is_array($storage_descriptor['fields']) &&
             count($storage_descriptor['fields']) > 0 &&
             (!array_key_exists('constraints', $storage_descriptor) || count($storage_descriptor['constraints']) > 0)
         ;
